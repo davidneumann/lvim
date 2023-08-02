@@ -17,6 +17,21 @@ lvim.builtin.which_key.mappings['f'] = { vim.lsp.buf.format, "Format Document" }
 lvim.builtin.which_key.mappings['gf'] = { vim.cmd.Git, "Open vim figutive" }
 -- lvim.lsp.buffer_mappings.normal_mode["f"] = { vim.lsp.buf.format, "Format Document" }
 
+lvim.lsp.buffer_mappings.normal_mode["gr"] = {
+  ":lua require'telescope.builtin'.lsp_references()<cr>",
+  "Find references"
+}
+
+lvim.lsp.buffer_mappings.normal_mode["gd"] = {
+  ":lua require'telescope.builtin'.lsp_definitions()<cr>",
+  "Definitions"
+}
+
+lvim.lsp.buffer_mappings.normal_mode["gf"] = {
+  ":Telescope frecency<cr>",
+  "Telescope Frecency"
+}
+
 -- nnoremap gpd <cmd>lua require('goto-preview').goto_preview_definition()<CR>
 -- nnoremap gpt <cmd>lua require('goto-preview').goto_preview_type_definition()<CR>
 -- nnoremap gpi <cmd>lua require('goto-preview').goto_preview_implementation()<CR>
@@ -62,6 +77,32 @@ lvim.builtin.which_key.mappings["C"] = {
   p = { ":CccPick<cr>", "Pick" },
   c = { ":CccConvert<cr>", "Convert" },
   h = { ":CccHighlighterToggle<cr>", "Toggle highlighter" },
+}
+
+lvim.builtin.which_key.mappings["H"] = {
+  name = "Harpoon",
+  a = { ":lua require('harpoon.mark').add_file()<cr>", "Mark file" },
+  e = { ":lua require('harpoon.ui').toggle_quick_menu()<cr>", "Toggle UI" },
+  h = { ":lua require('harpoon.ui').nav_file(1)<cr>", "Goto mark 1" },
+  j = { ":lua require('harpoon.ui').nav_file(2)<cr>", "Goto mark 2" },
+  k = { ":lua require('harpoon.ui').nav_file(3)<cr>", "Goto mark 3" },
+  l = { ":lua require('harpoon.ui').nav_file(4)<cr>", "Goto mark 4" },
+}
+
+lvim.builtin.which_key.vmappings["r"] = {
+  name = "Refactor",
+  t = { function() require('telescope').extensions.refactoring.refactors() end, "With telescope" },
+  e = { ":Refactor extract ", "Extract" },
+  f = { ":Refactor extract_to_file ", "Extract to file" },
+  v = { ":Refactor extract_var ", "Exract variable" },
+  i = { ":Refactor inline_var", "Inline variable" },
+}
+lvim.builtin.which_key.mappings["r"] = {
+  name = "Refactor",
+  t = { function() require('telescope').extensions.refactoring.refactors() end, "With telescope" },
+  i = { ":Refactor inline_var", "Inline variable" },
+  b = { ":Refactor extract_block", "Extract block" },
+  F = { ":Refactor extract_block_to_file", "Extract block to file" }
 }
 
 lvim.builtin.treesitter.rainbow.enable = true
@@ -181,12 +222,6 @@ lvim.plugins = {
     cmd = "TroubleToggle",
   },
   {
-    "Pocco81/auto-save.nvim",
-    config = function()
-      require("auto-save").setup()
-    end,
-  },
-  {
     "tpope/vim-surround",
 
     -- make sure to change the value of `timeoutlen` if it's not triggering correctly, see https://github.com/tpope/vim-surround/issues/117
@@ -194,7 +229,8 @@ lvim.plugins = {
     --  vim.o.timeoutlen = 500
     -- end
   },
-  { "nvim-treesitter/nvim-treesitter-angular" },
+  -- { "nvim-treesitter/nvim-treesitter-angular" },
+  { "elgiano/nvim-treesitter-angular",   branch = "topic/jsx-fix" },
   {
     "folke/persistence.nvim",
     event = "BufReadPre", -- this will only start session saving when an actual file was opened
@@ -229,6 +265,17 @@ lvim.plugins = {
     end,
 
   },
+  {
+    "ThePrimeagen/refactoring.nvim",
+    dependencies = {
+      { "nvim-lua/plenary.nvim" },
+      { "nvim-treesitter/nvim-treesitter" }
+    },
+    config = function()
+      require('refactoring').setup()
+      require("telescope").load_extension("refactoring")
+    end,
+  }
 }
 
 table.insert(lvim.plugins, {
@@ -286,6 +333,10 @@ formatters.setup({
       "json",
     }
   },
+  {
+    command = "eslint_d",
+    filetypes = { "typescript", "typescriptreact", "javascript", "javascriptreact" }
+  }
 })
 
 local linters = require "lvim.lsp.null-ls.linters"
@@ -295,6 +346,8 @@ linters.setup({
     filetypes = { "javascript", "typescript", "typescriptreact", "json" }
   },
 })
+
+require("lvim.lsp.manager").setup "tailwindcss"
 
 -- lvim.lsp.diagnostics.float.max_width = 120
 -- lvim.lsp.diagnostics.float.focusable = true
